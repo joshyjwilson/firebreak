@@ -19,7 +19,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          COUNT=$(gh pr list --label ai-generated --state open --json number --jq 'length')
+          COUNT=$(gh pr list --repo "${{ github.repository }}" --label ai-generated --state open --json number --jq 'length')
           echo "Open AI PRs: $COUNT"
           if [ "$COUNT" -gt 0 ]; then
             echo "busy=true" >> "$GITHUB_OUTPUT"
