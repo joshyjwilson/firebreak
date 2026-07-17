@@ -57,8 +57,18 @@ def gather_context_files(description: str) -> dict:
                 continue
     return files
 
+def load_agents_md() -> str:
+    """
+    Load repo-wide conventions from AGENTS.md, if present, so the agent
+    follows the same conventions Copilot cloud agent would read automatically.
+    """
+    if os.path.exists("AGENTS.md"):
+        with open("AGENTS.md", "r", encoding="utf-8") as f:
+            return f.read()[:MAX_FILE_CHARS]
+    return ""
 
-def build_prompt(key: str, summary: str, description: str, context_files: dict) -> str:
+
+def build_prompt(key: str, summary: str, description: str, context_files: dict, agents_md: str) -> str:
     context_block = ""
     if context_files:
         context_block = "\n\nExisting relevant files:\n"
@@ -66,7 +76,7 @@ def build_prompt(key: str, summary: str, description: str, context_files: dict) 
             context_block += f"\n--- {path} ---\n{content}\n"
     else:
         context_block = "\n\nNo existing files were found matching paths mentioned in the ticket. If this task requires editing an existing file, say so in your response instead of inventing content."
-
+    agents_block = f"\n\nRepository conventions (from AGENTS.md):\n{agents_md}\n" if agents_md else ""
     return f"""You are completing a small, well-defined engineering ticket.
 
 Ticket: {key}
@@ -74,6 +84,7 @@ Summary: {summary}
 
 Description:
 {description}
+{agents_block}
 {context_block}
 
 Implement ONLY what is described above. Do not add extra features, dependencies, or unrelated refactoring.
@@ -102,7 +113,8 @@ def main():
         sys.exit(1)
 
     context_files = gather_context_files(description)
-    prompt = build_prompt(key, summary, description, context_files)
+    agents_md = load_agents_md()
+    prompt = build_prompt(key, summary, description, context_files, agents_md)
 
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
 
