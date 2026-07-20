@@ -18,6 +18,7 @@ Cost controls baked in:
 
 import os
 import sys
+import json
 import glob
 import anthropic
 
@@ -67,42 +68,6 @@ def load_agents_md() -> str:
     return ""
 
 
-SUBMIT_TICKET_TOOL = {
-    "name": "submit_ticket_result",
-    "description": "Submit the result of completing the engineering ticket: either the files to write, or a blocked status if the ticket is unclear.",
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "files": {
-                "type": "array",
-                "description": "Files to create or overwrite. Leave empty if blocked.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {"type": "string", "description": "Relative path to the file"},
-                        "content": {"type": "string", "description": "Full file content"},
-                    },
-                    "required": ["path", "content"],
-                },
-            },
-            "summary": {
-                "type": "string",
-                "description": "One sentence describing what you did.",
-            },
-            "blocked": {
-                "type": "boolean",
-                "description": "True if the ticket is not clear enough to complete safely.",
-            },
-            "blocked_reason": {
-                "type": "string",
-                "description": "Explanation of why the ticket is blocked. Empty if not blocked.",
-            },
-        },
-        "required": ["files", "summary", "blocked", "blocked_reason"],
-    },
-}
-
-
 def build_prompt(key: str, summary: str, description: str, context_files: dict, agents_md: str) -> str:
     context_block = ""
     if context_files:
@@ -124,7 +89,17 @@ Description:
 
 Implement ONLY what is described above. Do not add extra features, dependencies, or unrelated refactoring.
 
-Call the submit_ticket_result tool exactly once with the files to write. If the ticket is not clear enough to complete safely, call it with blocked=true, files=[], and explain why in blocked_reason.
+Respond with ONLY a JSON object, no other text, no markdown fences, in this exact shape:
+{{
+  "files": [
+    {{"path": "relative/path/to/file.ext", "content": "full file content here"}}
+  ],
+  "summary": "one sentence describing what you did",
+  "blocked": false,
+  "blocked_reason": ""
+}}
+
+If the ticket is not clear enough to complete safely, set "blocked": true, leave "files" empty, and explain why in "blocked_reason".
 """
 
 
@@ -143,31 +118,39 @@ def main():
 
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
 
-    response = client.messages.create(
+    raw_text = ""
+    with client.messages.stream(
         model=MODEL,
         max_tokens=MAX_TOKENS,
-        tools=[SUBMIT_TICKET_TOOL],
-        tool_choice={"type": "tool", "name": "submit_ticket_result"},
         messages=[{"role": "user", "content": prompt}],
-    )
+    ) as stream:
+        for text in stream.text_stream:
+            raw_text += text
+        response = stream.get_final_message()
+        if response.stop_reason == "max_tokens":
+            print(
+                f"Response was truncated at {MAX_TOKENS} max_tokens — "
+                "the ticket likely needs a higher limit or a smaller scope.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
-    if response.stop_reason == "max_tokens":
-        print(
-            f"Response was truncated at {MAX_TOKENS} max_tokens — "
-            "the ticket likely needs a higher limit or a smaller scope.",
-            file=sys.stderr,
-        )
+    raw_text = raw_text.strip()
+
+
+    # Strip accidental markdown fences if the model adds them anyway
+    if raw_text.startswith("```"):
+        raw_text = raw_text.split("```")[1]
+        if raw_text.startswith("json"):
+            raw_text = raw_text[4:]
+        raw_text = raw_text.strip()
+
+    try:
+        result = json.loads(raw_text)
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse model response as JSON: {e}", file=sys.stderr)
+        print(f"Raw response was:\n{raw_text}", file=sys.stderr)
         sys.exit(1)
-
-    tool_use_block = next(
-        (block for block in response.content if block.type == "tool_use"), None
-    )
-    if tool_use_block is None:
-        print("Model did not call the expected tool.", file=sys.stderr)
-        print(f"Raw response was:\n{response.content}", file=sys.stderr)
-        sys.exit(1)
-
-    result = tool_use_block.input
 
     if result.get("blocked"):
         print(f"BLOCKED: {result.get('blocked_reason', 'no reason given')}")
@@ -178,12 +161,36 @@ def main():
 
     files_written = []
     for file_entry in result.get("files", []):
-        path = file_entry["path"]
-        content = file_entry["content"]
+        if not isinstance(file_entry, dict):
+            print(
+                f"Skipping malformed file entry (expected object, got {type(file_entry).__name__}): {file_entry!r}",
+                file=sys.stderr,
+            )
+            continue
+
+        path = file_entry.get("path")
+        content = file_entry.get("content")
+
+        if not path or content is None:
+            print(
+                f"Skipping malformed file entry missing 'path' or 'content': {file_entry!r}",
+                file=sys.stderr,
+            )
+            continue
+
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
         files_written.append(path)
+
+    if not files_written and result.get("files"):
+        print(
+            "All file entries were malformed — no files were written.",
+            file=sys.stderr,
+        )
+        with open("AGENT_BLOCKED.txt", "w") as f:
+            f.write("Model returned malformed file entries (not objects with 'path'/'content'); no files written.")
+        sys.exit(2)
 
     print(f"Wrote {len(files_written)} file(s): {', '.join(files_written)}")
     print(f"Summary: {result.get('summary', '')}")
