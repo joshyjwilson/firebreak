@@ -48,5 +48,13 @@ window.AppState = {
     this._subscribers.forEach(callback => {
       callback();
     });
+  },
+
+  /**
+   * Public: notify all subscribers that state has changed.
+   * Used by controls.js after mutating filteredVenues directly.
+   */
+  notify() {
+    this._notifySubscribers();
   }
 };
