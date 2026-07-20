@@ -23,7 +23,7 @@ import glob
 import anthropic
 
 MODEL = "claude-haiku-4-5-20251001"
-MAX_TOKENS = 4000
+MAX_TOKENS = 16000
 MAX_CONTEXT_FILES = 6
 MAX_FILE_CHARS = 8000  # per file, to keep input tokens bounded
 
