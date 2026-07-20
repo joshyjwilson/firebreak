@@ -160,6 +160,7 @@ def main():
         sys.exit(2)
 
     files_written = []
+    skipped_workflow_files = []
     for file_entry in result.get("files", []):
         if not isinstance(file_entry, dict):
             print(
@@ -178,10 +179,29 @@ def main():
             )
             continue
 
+        normalized = path.replace("\\", "/").lstrip("./")
+        if normalized.startswith(".github/workflows/"):
+            skipped_workflow_files.append(path)
+            print(
+                f"Skipping '{path}': ticket did not explicitly request a workflow change, "
+                "and editing CI workflow files unattended is high-risk. Rerun with an explicit "
+                "'edit workflow' instruction in the ticket if this is intentional.",
+                file=sys.stderr,
+            )
+            continue
+
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
         files_written.append(path)
+
+    if skipped_workflow_files and not files_written:
+        with open("AGENT_BLOCKED.txt", "w") as f:
+            f.write(
+                "Model attempted to modify workflow file(s) under .github/workflows/: "
+                f"{', '.join(skipped_workflow_files)}. Skipped for safety; no files written."
+            )
+        sys.exit(2)
 
     if not files_written and result.get("files"):
         print(
