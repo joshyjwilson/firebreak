@@ -61,6 +61,7 @@ jobs:
           TICKET_KEY: ${{ github.event.client_payload.key }}
           TICKET_SUMMARY: ${{ github.event.client_payload.summary }}
           TICKET_DESCRIPTION: ${{ github.event.client_payload.description }}
+          ALLOW_WORKFLOW_EDITS: ${{ secrets.WORKFLOW_PAT != '' }}
         run: python run_task.py
 
       - name: Check if blocked

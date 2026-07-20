@@ -107,6 +107,7 @@ def main():
     key = os.environ.get("TICKET_KEY", "UNKNOWN")
     summary = os.environ.get("TICKET_SUMMARY", "")
     description = os.environ.get("TICKET_DESCRIPTION", "")
+    allow_workflow_edits = os.environ.get("ALLOW_WORKFLOW_EDITS", "").strip().lower() == "true"
 
     if not description.strip():
         print("No ticket description provided — aborting.", file=sys.stderr)
@@ -180,12 +181,12 @@ def main():
             continue
 
         normalized = path.replace("\\", "/").lstrip("./")
-        if normalized.startswith(".github/workflows/"):
+        if normalized.startswith(".github/workflows/") and not allow_workflow_edits:
             skipped_workflow_files.append(path)
             print(
-                f"Skipping '{path}': ticket did not explicitly request a workflow change, "
-                "and editing CI workflow files unattended is high-risk. Rerun with an explicit "
-                "'edit workflow' instruction in the ticket if this is intentional.",
+                f"Skipping '{path}': WORKFLOW_PAT is not configured, so the default "
+                "GITHUB_TOKEN cannot push workflow file changes. Add a WORKFLOW_PAT repo "
+                "secret (PAT with 'repo' + 'workflow' scopes) to allow this.",
                 file=sys.stderr,
             )
             continue
