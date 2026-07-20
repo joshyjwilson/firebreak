@@ -98,7 +98,11 @@ jobs:
       - name: Open draft PR
         if: steps.post_commit_blocked_check.outputs.blocked == 'false'
         env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
+          # PR creation only needs pull-requests:write, which the default
+          # GITHUB_TOKEN already has via the top-level `permissions:` block.
+          # WORKFLOW_PAT is scoped for pushing workflow file changes, not PRs,
+          # and typically lacks pull-request permissions.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SUMMARY=$(cat AGENT_SUMMARY.txt 2>/dev/null || echo "No summary provided")
           gh pr create \
