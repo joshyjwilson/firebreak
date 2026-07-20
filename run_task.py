@@ -124,6 +124,14 @@ def main():
         messages=[{"role": "user", "content": prompt}],
     )
 
+    if response.stop_reason == "max_tokens":
+        print(
+            f"Response was truncated at {MAX_TOKENS} max_tokens — "
+            "the ticket likely needs a higher limit or a smaller scope.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+  
     raw_text = "".join(
         block.text for block in response.content if block.type == "text"
     ).strip()
