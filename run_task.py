@@ -119,15 +119,15 @@ def main():
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
 
     raw_text = ""
-      with client.messages.stream(
-          model=MODEL,
-          max_tokens=MAX_TOKENS,
-          messages=[{"role": "user", "content": prompt}],
-      ) as stream:
-          for text in stream.text_stream:
-              raw_text += text
-          response = stream.get_final_message()
-          if response.stop_reason == "max_tokens":
+    with client.messages.stream(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        messages=[{"role": "user", "content": prompt}],
+    ) as stream:
+        for text in stream.text_stream:
+            raw_text += text
+        response = stream.get_final_message()
+        if response.stop_reason == "max_tokens":
             print(
               f"Response was truncated at {MAX_TOKENS} max_tokens — "
               "the ticket likely needs a higher limit or a smaller scope.",
@@ -135,7 +135,7 @@ def main():
             )
             sys.exit(1)
   
-      raw_text = raw_text.strip()
+    raw_text = raw_text.strip()
   
 
 
