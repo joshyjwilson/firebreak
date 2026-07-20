@@ -16,7 +16,7 @@ The site uses a flat, static HTML structure with the following file organization
 
 ## Data Schema
 
-Venue objects in `devon_venues.json` follow this schema:
+Venue objects in `data/devon_venues.json` follow this schema:
 
 ```json
 {
