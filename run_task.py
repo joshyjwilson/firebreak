@@ -129,14 +129,13 @@ def main():
         response = stream.get_final_message()
         if response.stop_reason == "max_tokens":
             print(
-              f"Response was truncated at {MAX_TOKENS} max_tokens — "
-              "the ticket likely needs a higher limit or a smaller scope.",
-              file=sys.stderr,
+                f"Response was truncated at {MAX_TOKENS} max_tokens — "
+                "the ticket likely needs a higher limit or a smaller scope.",
+                file=sys.stderr,
             )
             sys.exit(1)
-  
+
     raw_text = raw_text.strip()
-  
 
 
     # Strip accidental markdown fences if the model adds them anyway
