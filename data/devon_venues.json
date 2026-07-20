@@ -1,0 +1,98 @@
+[
+  {
+    "id": "exeter-archery-centre",
+    "name": "Exeter Archery Centre",
+    "address": "Old Tiverton Road, Exeter, Devon EX1 2AU",
+    "lat": 50.7231,
+    "lng": -3.5275,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": 4.5,
+    "rating_count": 28,
+    "source_url": null
+  },
+  {
+    "id": "totnes-archery-club",
+    "name": "Totnes Archery Club",
+    "address": "Vire Island, Totnes, Devon TQ9 5GU",
+    "lat": 50.4232,
+    "lng": -3.6754,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": null,
+    "rating_count": null,
+    "source_url": null
+  },
+  {
+    "id": "newton-abbot-archery",
+    "name": "Newton Abbot Archery Club",
+    "address": "Teigngrace, Newton Abbot, Devon TQ12 6UE",
+    "lat": 50.5324,
+    "lng": -3.5671,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": 4.2,
+    "rating_count": 15,
+    "source_url": null
+  },
+  {
+    "id": "barnstaple-archery-society",
+    "name": "Barnstaple Archery Society",
+    "address": "Riverside, Barnstaple, Devon EX32 8HX",
+    "lat": 51.0778,
+    "lng": -4.0637,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": null,
+    "rating_count": null,
+    "source_url": null
+  },
+  {
+    "id": "tiverton-archery-club",
+    "name": "Tiverton Archery Club",
+    "address": "Blundells School Grounds, Tiverton, Devon EX16 4DD",
+    "lat": 50.8832,
+    "lng": -3.4827,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": 4.0,
+    "rating_count": 8,
+    "source_url": null
+  },
+  {
+    "id": "sidmouth-archery",
+    "name": "Sidmouth Archery Club",
+    "address": "The Esplanade, Sidmouth, Devon EX10 8RU",
+    "lat": 50.6834,
+    "lng": -3.2427,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": null,
+    "rating_count": null,
+    "source_url": null
+  },
+  {
+    "id": "crediton-archery-club",
+    "name": "Crediton Archery Club",
+    "address": "Newcombes, Crediton, Devon EX17 3AY",
+    "lat": 50.7751,
+    "lng": -3.6125,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": null,
+    "rating_count": null,
+    "source_url": null
+  },
+  {
+    "id": "okehampton-archery-range",
+    "name": "Okehampton Archery Range",
+    "address": "Dartmoor, Okehampton, Devon EX20 1PD",
+    "lat": 50.7414,
+    "lng": -3.9287,
+    "cost_gbp": null,
+    "cost_notes": "cost not confirmed",
+    "rating": 4.3,
+    "rating_count": 12,
+    "source_url": null
+  }
+]
