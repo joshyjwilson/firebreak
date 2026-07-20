@@ -34,6 +34,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          # Use a PAT with the `workflow` scope if provided, so tickets that
+          # need to touch .github/workflows/* can actually push those changes.
+          # Falls back to the default GITHUB_TOKEN (which can never push
+          # workflow file changes) if the secret isn't configured.
+          token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -71,13 +77,27 @@ jobs:
         run: |
           git add -A
           git reset -- AGENT_SUMMARY.txt 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "Nothing to commit — agent produced no file changes."
+            echo "No changes to commit." > AGENT_BLOCKED.txt
+            exit 0
+          fi
           git commit -m "AI Task ${{ github.event.client_payload.key }}: ${{ github.event.client_payload.summary }}"
           git push origin "ai-task/${{ github.event.client_payload.key }}"
 
+      - name: Re-check if blocked after commit
+        id: post_commit_blocked_check
+        run: |
+          if [ -f "AGENT_BLOCKED.txt" ]; then
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "blocked=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Open draft PR
-        if: steps.blocked_check.outputs.blocked == 'false'
+        if: steps.post_commit_blocked_check.outputs.blocked == 'false'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
         run: |
           SUMMARY=$(cat AGENT_SUMMARY.txt 2>/dev/null || echo "No summary provided")
           gh pr create \
@@ -93,7 +113,7 @@ jobs:
             --head "ai-task/${{ github.event.client_payload.key }}"
 
       - name: Report blocked ticket
-        if: steps.blocked_check.outputs.blocked == 'true'
+        if: steps.blocked_check.outputs.blocked == 'true' || steps.post_commit_blocked_check.outputs.blocked == 'true'
         run: |
           echo "::warning::Agent could not complete ${{ github.event.client_payload.key }}: $(cat AGENT_BLOCKED.txt)"
 
