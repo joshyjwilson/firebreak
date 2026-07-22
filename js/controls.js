@@ -1,4 +1,4 @@
-// Sort and filter controls for venue list
+// Sort, filter, and theme controls for venue list
 (function() {
   const controlsElement = document.getElementById('controls');
   if (!controlsElement) return;
@@ -8,6 +8,38 @@
   let activeSortDescending = false;
   let minRatingFilter = null;
   let maxCostFilter = null;
+
+  // Initialize theme from localStorage or default to 'light'
+  function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const theme = savedTheme || 'light';
+    document.body.setAttribute('data-theme', theme);
+  }
+
+  // Create theme toggle button
+  const themeButton = document.createElement('button');
+  themeButton.className = 'theme-toggle';
+  themeButton.textContent = '🌙 Dark Mode';
+  themeButton.addEventListener('click', () => toggleTheme());
+  controlsElement.appendChild(themeButton);
+
+  /**
+   * Toggle between light and dark themes.
+   */
+  function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeButtonText(newTheme);
+  }
+
+  /**
+   * Update the theme button text based on current theme.
+   */
+  function updateThemeButtonText(theme) {
+    themeButton.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+  }
 
   // Create sort button container
   const buttonContainer = document.createElement('div');
@@ -151,4 +183,8 @@
     // Notify subscribers that state has changed
     window.AppState.notify();
   }
+
+  // Initialize theme on page load
+  initializeTheme();
+  updateThemeButtonText(document.body.getAttribute('data-theme'));
 })();
