@@ -1,7 +1,13 @@
 :root {
-  --color-background: #f5f5f5;
-  --color-accent: #2563eb;
-  --color-text: #1f2937;
+  --color-background: #ffffff;
+  --color-text: #333333;
+  --color-accent: #007bff;
+}
+
+body[data-theme="dark"] {
+  --color-background: #1e1e1e;
+  --color-text: #e0e0e0;
+  --color-accent: #4a9eff;
 }
 
 * {
@@ -10,34 +16,110 @@
   box-sizing: border-box;
 }
 
-html,
 body {
-  height: 100%;
-  width: 100%;
-}
-
-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: var(--color-background);
   color: var(--color-text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#controls {
+  padding: 16px;
+  background-color: var(--color-background);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+body[data-theme="dark"] #controls {
+  border-bottom-color: #333333;
+}
+
+.sort-controls,
+.filter-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sort-button {
+  padding: 8px 16px;
+  margin-right: 8px;
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.sort-button:hover {
+  opacity: 0.8;
+}
+
+.theme-toggle {
+  padding: 8px 16px;
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+  margin-bottom: 12px;
+}
+
+.theme-toggle:hover {
+  opacity: 0.8;
+}
+
+.filter-controls label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.filter-controls input {
+  width: 80px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+body[data-theme="dark"] .filter-controls input {
+  border-color: #555555;
 }
 
 #map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 65%;
-  height: 100vh;
+  height: 400px;
+  background-color: var(--color-background);
 }
 
 #venue-list {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 35%;
-  height: 100vh;
+  max-height: 400px;
   overflow-y: auto;
-  background-color: white;
+  background-color: var(--color-background);
+  border-top: 1px solid #e0e0e0;
+}
+
+body[data-theme="dark"] #venue-list {
+  border-top-color: #333333;
+}
+
+.list-row {
+  cursor: pointer;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px;
+  transition: background-color 0.2s;
+}
+
+body[data-theme="dark"] .list-row {
+  border-bottom-color: #333333;
+}
+
+.list-error {
+  padding: 20px;
+  color: #d32f2f;
+  font-size: 14px;
 }
